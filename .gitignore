@@ -1,0 +1,17 @@
+# Never commit credentials
+.env
+.env.*
+*.asc
+auth.json
+private_keys*
+.secrets
+credentials.json
+.credentials.json
+
+# Docker build cache
+.docker/
+
+# Editor
+.DS_Store
+.vscode/
+*.swp

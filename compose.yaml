@@ -1,0 +1,46 @@
+# compose.yaml — for Zed / headless / docker-run attach flows
+# VS Code and Cursor users: use "Reopen in Container" via devcontainer.json instead.
+#
+# Usage:
+#   docker compose up -d          # start container
+#   docker compose exec dev fish  # attach a shell
+#   docker compose down           # stop + remove
+
+services:
+  dev:
+    image: ghcr.io/kogakure/devcontainer:latest
+    # build: .  # uncomment to build locally
+    container_name: floating-phoenix
+    user: vscode
+    working_dir: /workspaces
+    stdin_open: true
+    tty: true
+
+    volumes:
+      # Workspace — replace with your project path
+      - ..:/workspaces:cached
+
+      # ── Read-only credential mounts (no secrets in image) ────────────────
+      - ${HOME}/.claude/.credentials.json:/home/vscode/.claude/.credentials.json:ro
+      - ${HOME}/.claude/settings.json:/home/vscode/.claude/settings.json:ro
+      - ${HOME}/.codex:/home/vscode/.codex:ro
+      - ${HOME}/.pi/agent/auth.json:/home/vscode/.pi/agent/auth.json:ro
+      - ${HOME}/.grok:/home/vscode/.grok:ro
+      - ${HOME}/.config/gh:/home/vscode/.config/gh:ro
+      - ${HOME}/.config/git/config-personal:/home/vscode/.config/git/config-personal:ro
+      - ${HOME}/.agents:/home/vscode/.agents:ro
+
+    environment:
+      # Forward SSH agent (Secretive on macOS works via this)
+      SSH_AUTH_SOCK: ${SSH_AUTH_SOCK:-}
+      # Passthrough API keys if you prefer env-var injection over file mounts
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      XAI_API_KEY: ${XAI_API_KEY:-}
+
+    # SSH agent socket forwarding (macOS host)
+    # volumes entry for the socket, needed if SSH_AUTH_SOCK is a file path
+    # Uncomment and adjust if Secretive/SSH-agent uses a socket file:
+    # - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}:ro
+
+    command: ["/usr/bin/fish", "--login"]

@@ -1,0 +1,100 @@
+{
+  "name": "Floating Phoenix",
+  // Use the published image (fast) or build locally:
+  "image": "ghcr.io/kogakure/devcontainer:latest",
+  // "build": { "dockerfile": "../Dockerfile" },
+
+  "remoteUser": "vscode",
+
+  // ── Runtime credential mounts (read-only, never baked into image) ──────────
+  // These bind-mount your host credentials so agents work without re-auth.
+  // Any path that doesn't exist on the host is silently skipped.
+  "mounts": [
+    // Claude Code
+    "source=${localEnv:HOME}/.claude/.credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached,readonly",
+    "source=${localEnv:HOME}/.claude/settings.json,target=/home/vscode/.claude/settings.json,type=bind,consistency=cached,readonly",
+    // Codex
+    "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,consistency=cached,readonly",
+    // Pi Agent (auth.json is gitignored on host, never in image)
+    "source=${localEnv:HOME}/.pi/agent/auth.json,target=/home/vscode/.pi/agent/auth.json,type=bind,consistency=cached,readonly",
+    // Grok
+    "source=${localEnv:HOME}/.grok,target=/home/vscode/.grok,type=bind,consistency=cached,readonly",
+    // GitHub CLI auth
+    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,consistency=cached,readonly",
+    // Git identity (personal include from private vault)
+    "source=${localEnv:HOME}/.config/git/config-personal,target=/home/vscode/.config/git/config-personal,type=bind,consistency=cached,readonly",
+    // Private agent prompts / ~/.agents
+    "source=${localEnv:HOME}/.agents,target=/home/vscode/.agents,type=bind,consistency=cached,readonly"
+  ],
+
+  // ── SSH agent forwarding (works with Secretive on macOS) ──────────────────
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "${localEnv:SSH_AUTH_SOCK}"
+  },
+
+  // ── Post-create: refresh agents + fisher (runs once on container create) ──
+  "postCreateCommand": "fish -c 'fisher update 2>/dev/null; echo Done'",
+
+  // ── VS Code / Cursor extensions ────────────────────────────────────────────
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.shell.linux": "/usr/bin/fish",
+        "terminal.integrated.defaultProfile.linux": "fish",
+        "terminal.integrated.profiles.linux": {
+          "fish": { "path": "/usr/bin/fish", "args": ["--login"] }
+        },
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "git.enableSmartCommit": true
+      },
+      "extensions": [
+        // Editor
+        "editorconfig.editorconfig",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "rvest.vs-code-prettier-eslint",
+        "gruntfuggly.todo-tree",
+        "wayou.vscode-todo-highlight",
+        "mikestead.dotenv",
+        "tyriar.sort-lines",
+        "file-icons.file-icons",
+        "pkief.material-icon-theme",
+        // Git
+        "github.vscode-pull-request-github",
+        "codezombiech.gitignore",
+        // AI
+        "github.copilot-chat",
+        // Language / framework
+        "astro-build.astro-vscode",
+        "bradlc.vscode-tailwindcss",
+        "styled-components.vscode-styled-components",
+        "unifiedjs.vscode-mdx",
+        "mgmcdermott.vscode-language-babel",
+        "csstools.postcss",
+        "ecmel.vscode-html-css",
+        "redhat.vscode-yaml",
+        "christian-kohler.npm-intellisense",
+        "christian-kohler.path-intellisense",
+        "jasonnutter.search-node-modules",
+        // Markdown
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-preview-github-styles",
+        // Docker / containers
+        "ms-azuretools.vscode-docker",
+        "ms-azuretools.vscode-containers",
+        // Testing
+        "ms-playwright.playwright",
+        "ms-vscode.extension-test-runner",
+        // Remote
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode-remote.remote-ssh",
+        // Misc
+        "mechatroner.rainbow-csv",
+        "kamikillerto.vscode-colorize",
+        "chrmarti.regex",
+        "shellcheck"
+      ]
+    }
+  }
+}
