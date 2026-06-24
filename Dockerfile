@@ -38,6 +38,10 @@ RUN /tmp/dc-scripts/bootstrap-dotfiles.sh
 USER root
 RUN rm -rf /tmp/dc-scripts
 
+# ── Set fish as default login shell for vscode user ──────────────────────────
+USER root
+RUN chsh -s /usr/bin/fish vscode
+
 # ── Default to fish as vscode user ───────────────────────────────────────────
 USER vscode
 WORKDIR /home/vscode
