@@ -1,8 +1,8 @@
 {
   "name": "Floating Phoenix",
-  // Use the published image (fast) or build locally:
-  "image": "ghcr.io/kogakure/devcontainer:latest",
-  // "build": { "dockerfile": "../Dockerfile" },
+  // Build locally (switch back to "image" after CI publishes fixed image):
+  // "image": "ghcr.io/kogakure/devcontainer:latest",
+  "build": { "dockerfile": "../Dockerfile" },
 
   "remoteUser": "vscode",
 
@@ -25,8 +25,12 @@
     // Git identity (personal include from private vault)
     "source=${localEnv:HOME}/.config/git/config-personal,target=/home/vscode/.config/git/config-personal,type=bind,consistency=cached,readonly",
     // Private agent prompts / ~/.agents
-    "source=${localEnv:HOME}/.agents,target=/home/vscode/.agents,type=bind,consistency=cached,readonly"
+    "source=${localEnv:HOME}/.agents,target=/home/vscode/.agents,type=bind,consistency=cached,readonly",
+    // SSH public keys so Zed can connect via ssh -p 2222 vscode@localhost
+    "source=${localEnv:HOME}/.ssh/authorized_keys,target=/home/vscode/.ssh/authorized_keys,type=bind,consistency=cached,readonly"
   ],
+
+  "forwardPorts": [2222],
 
   // ── SSH agent forwarding (works with Secretive on macOS) ──────────────────
   "remoteEnv": {

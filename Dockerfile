@@ -34,15 +34,23 @@ RUN /tmp/dc-scripts/install-agents.sh
 # ── Layer 3: public dotfiles (vscode user) ────────────────────────────────────
 RUN /tmp/dc-scripts/bootstrap-dotfiles.sh
 
-# ── Clean up scripts ──────────────────────────────────────────────────────────
+# ── SSH server + entrypoint (root) ───────────────────────────────────────────
 USER root
+RUN mkdir -p /var/run/sshd /home/vscode/.ssh \
+    && ssh-keygen -A \
+    && printf '\nPasswordAuthentication no\nPubkeyAuthentication yes\nAllowUsers vscode\n' \
+       >> /etc/ssh/sshd_config \
+    && chmod 700 /home/vscode/.ssh \
+    && chown vscode:vscode /home/vscode/.ssh
+
+# ── Set fish as default login shell + install entrypoint ─────────────────────
+RUN chsh -s /usr/bin/fish vscode \
+    && install -m 755 /tmp/dc-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# ── Clean up scripts ──────────────────────────────────────────────────────────
 RUN rm -rf /tmp/dc-scripts
 
-# ── Set fish as default login shell for vscode user ──────────────────────────
-USER root
-RUN chsh -s /usr/bin/fish vscode
-
-# ── Default to fish as vscode user ───────────────────────────────────────────
+# ── Default: entrypoint starts sshd then execs fish ──────────────────────────
 USER vscode
 WORKDIR /home/vscode
-CMD ["/usr/bin/fish", "--login"]
+CMD ["/usr/local/bin/entrypoint.sh"]
