@@ -38,6 +38,7 @@ apt-get install -y --no-install-recommends \
     locales \
     less man-db \
     openssh-client \
+    openssh-server \
     python3 python3-pip
 
 # Debian names fd/bat differently

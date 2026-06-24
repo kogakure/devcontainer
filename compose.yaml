@@ -8,13 +8,16 @@
 
 services:
   dev:
-    image: ghcr.io/kogakure/devcontainer:latest
-    # build: .  # uncomment to build locally
+    # image: ghcr.io/kogakure/devcontainer:latest  # use after CI publishes
+    build: .
     container_name: floating-phoenix
     user: vscode
     working_dir: /workspaces
     stdin_open: true
     tty: true
+
+    ports:
+      - "2222:22"   # SSH — connect with: ssh -p 2222 vscode@localhost
 
     volumes:
       # Workspace — replace with your project path
@@ -31,6 +34,8 @@ services:
       - ${HOME}/.config/gh:/home/vscode/.config/gh:ro
       - ${HOME}/.config/git/config-personal:/home/vscode/.config/git/config-personal:ro
       - ${HOME}/.agents:/home/vscode/.agents:ro
+      # SSH public keys for container access (create with: cat ~/.ssh/id_ed25519.pub > ~/.ssh/authorized_keys)
+      - ${HOME}/.ssh/authorized_keys:/home/vscode/.ssh/authorized_keys:ro
 
     environment:
       # Forward SSH agent (Secretive on macOS works via this)
@@ -45,4 +50,4 @@ services:
     # Uncomment and adjust if Secretive/SSH-agent uses a socket file:
     # - ${SSH_AUTH_SOCK}:${SSH_AUTH_SOCK}:ro
 
-    command: ["/usr/bin/fish", "--login"]
+    # CMD from image: entrypoint.sh starts sshd then execs fish
