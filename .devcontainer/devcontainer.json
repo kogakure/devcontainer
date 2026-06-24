@@ -1,8 +1,8 @@
 {
   "name": "Floating Phoenix",
-  // Build locally (switch back to "image" after CI publishes fixed image):
-  // "image": "ghcr.io/kogakure/devcontainer:latest",
-  "build": { "dockerfile": "../Dockerfile" },
+  // Use the published image (fast) or build locally:
+  "image": "ghcr.io/kogakure/devcontainer:latest",
+  // "build": { "dockerfile": "../Dockerfile" },
 
   "remoteUser": "vscode",
 
