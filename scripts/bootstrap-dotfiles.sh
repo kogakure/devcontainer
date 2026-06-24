@@ -48,17 +48,123 @@ fi
 # ── Symlink: root dotfiles (Linux-portable subset) ───────────────────────────
 link() { ln -sf "$DOTFILES_DIR/$1" "$HOME/$2"; }
 
-link aliases            .aliases
 link editorconfig       .editorconfig
 link curlrc             .curlrc
 link gitmux.conf        .gitmux.conf
 link jjconfig.toml      .jjconfig.toml
 link session-variables.sh .session-variables.sh
 
-# Bash/Zsh compat (fish is primary, but keep them for edge cases)
-[[ -f "$DOTFILES_DIR/bashrc"      ]] && link bashrc       .bashrc
-[[ -f "$DOTFILES_DIR/zshrc"       ]] && link zshrc        .zshrc
-[[ -f "$DOTFILES_DIR/zshenv"      ]] && link zshenv       .zshenv
+# ── Container-local bash/zsh/profile (NOT linked from dotfiles — Mac versions ──
+# contain hardcoded /opt/homebrew paths and fish-only alias syntax that break
+# bash inside the container, especially in Zed where the login shell is bash).
+
+# ~/.profile — sourced by login bash and used by Zed for env
+cat > "$HOME/.profile" <<'PROFILE_EOF'
+# Source session variables (portable, Darwin-guarded)
+[ -f "$HOME/.session-variables.sh" ] && . "$HOME/.session-variables.sh"
+# Source .bashrc for interactive settings
+[ -f "$HOME/.bashrc" ] && . "$HOME/.bashrc"
+PROFILE_EOF
+
+# ~/.bashrc — portable, no Mac paths
+cat > "$HOME/.bashrc" <<'BASHRC_EOF'
+# Non-interactive: do nothing
+[[ $- == *i* ]] || return
+
+HISTCONTROL=erasedups:ignorespace
+HISTFILESIZE=100000
+HISTSIZE=10000
+HISTTIMEFORMAT="%F %T "
+shopt -s histappend checkwinsize extglob globstar
+
+# ── Session variables ────────────────────────────────────────────────────────
+[ -f "$HOME/.session-variables.sh" ] && source "$HOME/.session-variables.sh"
+
+# ── Tool initialisations (guarded — no hard-coded paths) ────────────────────
+if command -v starship >/dev/null 2>&1 && [[ $TERM != "dumb" ]]; then
+    eval "$(starship init bash)"
+fi
+if command -v direnv >/dev/null 2>&1; then
+    eval "$(direnv hook bash)"
+fi
+if command -v zoxide >/dev/null 2>&1; then
+    eval "$(zoxide init bash)"
+fi
+if command -v atuin >/dev/null 2>&1; then
+    eval "$(atuin init bash)"
+fi
+if command -v fzf >/dev/null 2>&1; then
+    eval "$(fzf --bash 2>/dev/null)" || true
+fi
+if command -v gh >/dev/null 2>&1; then
+    eval "$(gh completion -s bash)"
+fi
+if command -v mise >/dev/null 2>&1; then
+    eval "$(mise activate bash)"
+fi
+
+# ── Aliases (valid bash syntax) ───────────────────────────────────────────────
+alias ..='cd ..'
+alias ...='cd ../..'
+alias mkdir='mkdir -p'
+alias ls='eza --git --group-directories-first --icons'
+alias ll='eza -l --git --group-directories-first --icons'
+alias lt='eza --git --group-directories-first --icons --tree'
+alias lg='lazygit'
+alias v='vim'
+if command -v nvim >/dev/null 2>&1; then alias vim='nvim'; fi
+alias t='tmux'
+alias ta='tmux attach'
+alias c='clear'
+alias dotfiles='cd $HOME/.dotfiles'
+alias reload='exec bash -l'
+# AI agents
+alias cl='claude --dangerously-skip-permissions'
+alias clp='claude --permission-mode plan'
+alias clr='claude --resume'
+alias cx='codex --dangerously-bypass-approvals-and-sandbox'
+alias q='pi --model opencode-go/deepseek-v4-flash -p'
+BASHRC_EOF
+
+# ~/.zshrc — portable, no Mac paths, no antidote/brew
+cat > "$HOME/.zshrc" <<'ZSHRC_EOF'
+autoload -Uz compinit && compinit
+
+CASE_SENSITIVE="true"
+DISABLE_AUTO_TITLE="true"
+
+bindkey -v
+
+[ -f "$HOME/.session-variables.sh" ] && source "$HOME/.session-variables.sh"
+
+if command -v starship >/dev/null 2>&1; then eval "$(starship init zsh)"; fi
+if command -v direnv >/dev/null 2>&1; then eval "$(direnv hook zsh)"; fi
+if command -v zoxide >/dev/null 2>&1; then eval "$(zoxide init zsh)"; fi
+if command -v atuin >/dev/null 2>&1; then eval "$(atuin init zsh)"; fi
+if command -v fzf >/dev/null 2>&1; then source <(fzf --zsh 2>/dev/null) || true; fi
+if command -v gh >/dev/null 2>&1; then eval "$(gh completion -s zsh)"; fi
+if command -v mise >/dev/null 2>&1; then eval "$(mise activate zsh)"; fi
+
+alias ..='cd ..'
+alias ...='cd ../..'
+alias mkdir='mkdir -p'
+alias ls='eza --git --group-directories-first --icons'
+alias ll='eza -l --git --group-directories-first --icons'
+alias lt='eza --git --group-directories-first --icons --tree'
+alias lg='lazygit'
+alias v='vim'
+if command -v nvim >/dev/null 2>&1; then alias vim='nvim'; fi
+alias t='tmux'
+alias ta='tmux attach'
+alias c='clear'
+alias dotfiles='cd $HOME/.dotfiles'
+alias reload='exec zsh -l'
+alias cl='claude --dangerously-skip-permissions'
+alias clp='claude --permission-mode plan'
+alias clr='claude --resume'
+alias cx='codex --dangerously-bypass-approvals-and-sandbox'
+alias q='pi --model opencode-go/deepseek-v4-flash -p'
+ZSHRC_EOF
 
 # Skip private/ entries:
 #   ~/.agents → private/agents

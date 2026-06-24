@@ -13,8 +13,9 @@
     // Claude Code
     "source=${localEnv:HOME}/.claude/.credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached,readonly",
     "source=${localEnv:HOME}/.claude/settings.json,target=/home/vscode/.claude/settings.json,type=bind,consistency=cached,readonly",
-    // Codex
-    "source=${localEnv:HOME}/.codex,target=/home/vscode/.codex,type=bind,consistency=cached,readonly",
+    "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached,readonly",
+    // Codex — auth.json :ro only; config.toml must stay writable (codex writes trust settings)
+    "source=${localEnv:HOME}/.codex/auth.json,target=/home/vscode/.codex/auth.json,type=bind,consistency=cached,readonly",
     // Pi Agent (auth.json is gitignored on host, never in image)
     "source=${localEnv:HOME}/.pi/agent/auth.json,target=/home/vscode/.pi/agent/auth.json,type=bind,consistency=cached,readonly",
     // Grok

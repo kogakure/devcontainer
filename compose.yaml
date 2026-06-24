@@ -23,7 +23,9 @@ services:
       # ── Read-only credential mounts (no secrets in image) ────────────────
       - ${HOME}/.claude/.credentials.json:/home/vscode/.claude/.credentials.json:ro
       - ${HOME}/.claude/settings.json:/home/vscode/.claude/settings.json:ro
-      - ${HOME}/.codex:/home/vscode/.codex:ro
+      - ${HOME}/.claude.json:/home/vscode/.claude.json:ro
+      # Only auth.json :ro; config.toml must stay writable (codex writes trust settings)
+      - ${HOME}/.codex/auth.json:/home/vscode/.codex/auth.json:ro
       - ${HOME}/.pi/agent/auth.json:/home/vscode/.pi/agent/auth.json:ro
       - ${HOME}/.grok:/home/vscode/.grok:ro
       - ${HOME}/.config/gh:/home/vscode/.config/gh:ro
