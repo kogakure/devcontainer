@@ -6,9 +6,18 @@
 
   "remoteUser": "vscode",
 
+  // ── Stub missing host credential paths before Docker creates mounts ────────
+  // `initializeCommand` runs on the host BEFORE the container starts.
+  // It creates any absent parent dirs and stubs missing files so that the
+  // readonly `--mount` entries below never fail with "bind source path does
+  // not exist". JSON config files get `{}` (valid empty); non-JSON get empty.
+  // Real existing files are never touched (guarded by [ -e ]).
+  "initializeCommand": "sh -c 'for d in .claude .codex .pi/agent .grok .config/gh .config/git .agents .ssh; do mkdir -p \"$HOME/$d\"; done; for j in .claude/.credentials.json .claude/settings.json .claude.json .codex/auth.json .pi/agent/auth.json; do [ -e \"$HOME/$j\" ] || printf \"{}\" > \"$HOME/$j\"; done; for e in .config/git/config-personal .ssh/authorized_keys; do [ -e \"$HOME/$e\" ] || touch \"$HOME/$e\"; done'",
+
   // ── Runtime credential mounts (read-only, never baked into image) ──────────
   // These bind-mount your host credentials so agents work without re-auth.
-  // Any path that doesn't exist on the host is silently skipped.
+  // Absent files are stubbed by initializeCommand above; agents that find an
+  // empty stub simply start unauthenticated — no mount failure.
   "mounts": [
     // Claude Code
     "source=${localEnv:HOME}/.claude/.credentials.json,target=/home/vscode/.claude/.credentials.json,type=bind,consistency=cached,readonly",

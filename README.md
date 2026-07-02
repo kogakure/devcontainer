@@ -97,12 +97,21 @@ read-only bind-mounts defined in `devcontainer.json` / `compose.yaml`:
 | ------------------------------- | -------------- | ---------------------- |
 | `~/.claude/.credentials.json`   | same           | Claude Code OAuth      |
 | `~/.claude/settings.json`       | same           | Claude Code settings   |
-| `~/.codex/`                     | same           | Codex auth             |
+| `~/.claude.json`                | same           | Claude Code state      |
+| `~/.codex/auth.json`            | same           | Codex auth             |
 | `~/.pi/agent/auth.json`         | same           | Pi Agent OAuth         |
 | `~/.grok/`                      | same           | Grok auth              |
 | `~/.config/gh/`                 | same           | GitHub CLI (`gh auth`) |
 | `~/.config/git/config-personal` | same           | Git identity           |
 | `~/.agents/`                    | same           | Private agent prompts  |
+| `~/.ssh/authorized_keys`        | same           | Zed SSH access (port 2222) |
+
+**Missing files are auto-stubbed** — you don't need every credential on every
+machine. The devcontainer flow (`devcontainer.json`) stubs absent files via
+`initializeCommand` before the container starts. The compose flow uses
+`scripts/init-host-mounts.sh` (run it manually before `docker compose up -d`).
+JSON files get an empty `{}` stub; other files get an empty stub. An agent that
+finds a stub simply starts unauthenticated — no mount failure.
 
 SSH: the devcontainer forwards your host SSH agent socket (`SSH_AUTH_SOCK`), so
 Secretive / ssh-agent on macOS works without copying any key.
