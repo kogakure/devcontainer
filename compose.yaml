@@ -2,9 +2,10 @@
 # VS Code and Cursor users: use "Reopen in Container" via devcontainer.json instead.
 #
 # Usage:
-#   docker compose up -d          # start container
-#   docker compose exec dev fish  # attach a shell
-#   docker compose down           # stop + remove
+#   sh scripts/init-host-mounts.sh  # stub missing credential files on host (first run)
+#   docker compose up -d            # start container
+#   docker compose exec dev fish    # attach a shell
+#   docker compose down             # stop + remove
 
 services:
   dev:
